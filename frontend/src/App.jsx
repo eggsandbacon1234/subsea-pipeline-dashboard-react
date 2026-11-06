@@ -1,34 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 function App() {
   const [videoUrl, setVideoUrl] = useState(null);
   const [confidence, setConfidence] = useState(0.5);
-  const [showPipe, setShowPipe] = useState(true);
-  const [showCrack, setShowCrack] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [detections, setDetections] = useState([]);
+  const [processedVideo,
+       setProcessedVideo]
+       = useState(null);
  
-  const visibleCracks = detections.filter(
-    detection =>
-      detection.type === "crack" &&
-      detection.confidence >= confidence &&
-      Math.abs(
-        currentTime - detection.time
-      ) <= 1
-  );
-
-  const visiblePipes = detections.filter(
-    detection =>
-      detection.type === "pipe" &&
-      detection.confidence >= confidence &&
-      Math.abs(
-        currentTime - detection.time
-      ) <= 1
-  );
-  
-  const firstDetection = detections[0];
-
-
+       
   const handleVideoUpload = async (event) => {
 
     const file = event.target.files[0];
@@ -58,6 +39,10 @@ function App() {
 
     setDetections(
       data.detections
+    );
+
+    setProcessedVideo(
+      `http://127.0.0.1:8000${data.processed_video}`
     );
   };
 
@@ -101,131 +86,132 @@ function App() {
         />
       </div>
 
-      <div style={{ marginTop: "20px" }}>
-        <label>
-          <input
-            type="checkbox"
-            checked={showPipe}
-            onChange={() =>
-              setShowPipe(!showPipe)
-            }
-          />
-          Show Pipe Mask
-        </label>
-
-        <br />
-
-        <label>
-          <input
-            type="checkbox"
-            checked={showCrack}
-            onChange={() =>
-              setShowCrack(!showCrack)
-            }
-          />
-          Show Crack Mask
-        </label>
-
-      </div>
-
-      <p>
-        Current Time: {currentTime.toFixed(1)} seconds
-      </p>
-
       <p>
         Detections Loaded:
         {detections.length}
       </p>
             
 
-      {videoUrl && (
+      {videoUrl && processedVideo && (
+
         <div
           style={{
-            position: "relative",
-            width: "800px",
+            display: "flex",
+            gap: "20px",
             marginTop: "20px"
           }}
         >
-          <video
-            controls
-            width="800"
-            height="450"
-            src={videoUrl}
-            onTimeUpdate={(e) =>
-              setCurrentTime(
-                e.target.currentTime
-              )
+
+          <div>
+
+            <h2>
+              Original Video
+            </h2>
+
+            <video
+              controls
+              width="500"
+              src={videoUrl}
+            />
+
+          </div>
+
+          <div>
+
+            <h2>
+              Processed Video
+            </h2>
+
+            <video
+              controls
+              width="500"
+              src={processedVideo}
+            />
+
+          </div>
+
+        </div>
+
+      )}
+
+      {detections.length > 0 && (
+
+        <div
+          style={{
+            marginTop: "30px"
+          }}
+        >
+
+          <h2>
+            Detection Summary
+          </h2>
+
+          <p>
+            Total Detections:
+            {detections.length}
+          </p>
+
+          <p>
+            Cracks:
+            {
+              detections.filter(
+                d => d.type === "crack"
+              ).length
             }
-          />
+          </p>
 
-          <svg
-            width="800"
-            height="450"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              pointerEvents: "none"
-            }}
-          >
-            
-            {firstDetection && firstDetection.mask && (
+          <p>
+            Pipes:
+            {
+              detections.filter(
+                d => d.type === "pipe"
+              ).length
+            }
+          </p>
 
-              <polygon
-                points={
-                  firstDetection.mask
-                    .map(
-                      point =>
-                        `${point[0] * (800 / 1920)},
-                        ${point[1] * (450 / 1080)}`
-                    )
-                    .join(" ")
-                }
+        </div>
 
-                fill="rgba(0,0,255,0.3)"
+      )}
 
-                stroke="blue"
+      {detections.length > 0 && (
 
-                strokeWidth="2"
-              />
+        <div
+          style={{
+            marginTop: "30px",
+            width: "80%"
+          }}
+        >
 
-            )}
+          <h2>
+            Detection Timeline
+          </h2>
 
-          </svg>
+          {detections.map(
+            (detection, index) => (
 
-          {showCrack && visibleCracks.length > 0 && (
-            <div
-              style={{
-                position: "absolute",
-                top: "100px",
-                left: "250px",
-                background: "red",
-                color: "white",
-                padding: "10px",
-                borderRadius: "5px"
-              }}
-            >
-              Crack Detected (0.7)
-            </div>
-          )}
+              <div
+                key={index}
+              >
 
-          {showPipe && visiblePipes.length > 0 && (
-            <div
-              style={{
-                position: "absolute",
-                top: "200px",
-                left: "150px",
-                background: "blue",
-                color: "white",
-                padding: "10px",
-                borderRadius: "5px"
-              }}
-            >
-              Pipe Mask
-            </div>
+                {detection.time}s
+
+                {" - "}
+
+                {detection.type}
+
+                {" ("}
+
+                {detection.confidence.toFixed(2)}
+
+                {")"}
+
+              </div>
+
+            )
           )}
 
         </div>
+
       )}
 
       
