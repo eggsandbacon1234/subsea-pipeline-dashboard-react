@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 
 function App() {
   const [videoUrl, setVideoUrl] = useState(null);
@@ -6,32 +6,71 @@ function App() {
   const [showPipe, setShowPipe] = useState(true);
   const [showCrack, setShowCrack] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
-  const detections = [
-    {
-      time: 5,
-      type: "crack",
-      confidence: 0.7
-    },
-    {
-      time: 10,
-      type: "pipe",
-      confidence: 0.95
-    }
-  ];
+  const [detections, setDetections] = useState([]);
+ 
+  const visibleCracks = detections.filter(
+    detection =>
+      detection.type === "crack" &&
+      detection.confidence >= confidence &&
+      Math.abs(
+        currentTime - detection.time
+      ) <= 1
+  );
 
-
+  const visiblePipes = detections.filter(
+    detection =>
+      detection.type === "pipe" &&
+      detection.confidence >= confidence &&
+      Math.abs(
+        currentTime - detection.time
+      ) <= 1
+  );
   
-  const handleVideoUpload = (event) => {
+  const firstDetection = detections[0];
+
+
+  const handleVideoUpload = async (event) => {
+
     const file = event.target.files[0];
 
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setVideoUrl(url);
-    }
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+
+    setVideoUrl(url);
+
+    const formData = new FormData();
+
+    formData.append(
+      "file",
+      file
+    );
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/analyze",
+      {
+        method: "POST",
+        body: formData
+      }
+    );
+
+    const data = await response.json();
+
+    setDetections(
+      data.detections
+    );
   };
 
+
   return (
-    <div style={{ padding: "20px" }}>
+    <div
+      style={{
+        padding: "20px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center"
+      }}
+    >
       <h1>Subsea Pipeline Inspection System</h1>
 
       <input
@@ -92,7 +131,12 @@ function App() {
       <p>
         Current Time: {currentTime.toFixed(1)} seconds
       </p>
-      
+
+      <p>
+        Detections Loaded:
+        {detections.length}
+      </p>
+            
 
       {videoUrl && (
         <div
@@ -105,6 +149,7 @@ function App() {
           <video
             controls
             width="800"
+            height="450"
             src={videoUrl}
             onTimeUpdate={(e) =>
               setCurrentTime(
@@ -113,7 +158,42 @@ function App() {
             }
           />
 
-          {showCrack && confidence <= 0.7 && (
+          <svg
+            width="800"
+            height="450"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              pointerEvents: "none"
+            }}
+          >
+            
+            {firstDetection && firstDetection.mask && (
+
+              <polygon
+                points={
+                  firstDetection.mask
+                    .map(
+                      point =>
+                        `${point[0] * (800 / 1920)},
+                        ${point[1] * (450 / 1080)}`
+                    )
+                    .join(" ")
+                }
+
+                fill="rgba(0,0,255,0.3)"
+
+                stroke="blue"
+
+                strokeWidth="2"
+              />
+
+            )}
+
+          </svg>
+
+          {showCrack && visibleCracks.length > 0 && (
             <div
               style={{
                 position: "absolute",
@@ -129,7 +209,7 @@ function App() {
             </div>
           )}
 
-          {showPipe && (
+          {showPipe && visiblePipes.length > 0 && (
             <div
               style={{
                 position: "absolute",
@@ -147,6 +227,8 @@ function App() {
 
         </div>
       )}
+
+      
     </div>
   );
 }
