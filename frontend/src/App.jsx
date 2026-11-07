@@ -1,12 +1,17 @@
 import { useState, useRef } from "react";
 
 function App() {
+  const [report,
+  setReport]
+  = useState("");
+  const [reportLoading,
+  setReportLoading]
+  = useState(false);
   const originalVideoRef = useRef(null);
   const processedVideoRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState(null);
   const [confidence, setConfidence] = useState(0.5);
-  const [currentTime, setCurrentTime] = useState(0);
   const [detections, setDetections] = useState([]);
   const [processedVideo,
        setProcessedVideo]
@@ -78,6 +83,73 @@ detections.forEach(
     }
   }
 );
+
+const generateReport = async () => {
+
+  setReportLoading(true);
+
+  try {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/generate-report",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body: JSON.stringify({
+
+          totalDetections:
+            detections.length,
+
+          cracks:
+            detections.filter(
+              d => d.type === "crack"
+            ).length,
+
+          pipes:
+            detections.filter(
+              d => d.type === "pipe"
+            ).length,
+
+          highestConfidence:
+            Math.max(
+              ...detections.map(
+                d => d.confidence
+              )
+            ).toFixed(2),
+
+          averageConfidence:
+            (
+              detections.reduce(
+                (sum, d) =>
+                  sum + d.confidence,
+                0
+              ) /
+              detections.length
+            ).toFixed(2)
+
+        })
+
+      }
+    );
+
+    const data =
+      await response.json();
+
+    setReport(data.report);
+
+  }
+
+  finally {
+
+    setReportLoading(false);
+
+  }
+
+};
 
   return (
     <div
@@ -252,6 +324,7 @@ detections.forEach(
 
       )}
 
+      
       {detections.length > 0 && (
 
         <div
@@ -318,6 +391,56 @@ detections.forEach(
         </div>
 
       )}
+      {detections.length > 0 && (
+
+        <div
+          style={{
+            marginTop: "40px"
+          }}
+        >
+
+          <button
+            onClick={generateReport}
+          >
+            Generate AI Report
+          </button>
+
+        </div>
+
+      )}
+
+            {reportLoading && (
+
+        <p>
+          Generating Report...
+        </p>
+
+      )}
+
+      {report && (
+
+        <div
+          style={{
+            marginTop: "20px",
+            maxWidth: "900px",
+            textAlign: "left",
+            whiteSpace: "pre-wrap",
+            border: "1px solid white",
+            padding: "20px",
+            borderRadius: "10px"
+          }}
+        >
+
+          <h2>
+            AI Inspection Report
+          </h2>
+
+          {report}
+
+        </div>
+
+      )}
+      
 
       
     </div>
