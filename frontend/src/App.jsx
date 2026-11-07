@@ -213,14 +213,18 @@ const crackTimeline =
       <div
         style={{
           background: "#1E293B",
-          padding: "20px",
+          padding: "12px 20px",
           borderRadius: "12px",
           width: "90%",
           marginTop: "20px"
         }}
       >
 
-        <h3>
+        <h3
+          style={{
+            marginBottom: "10px"
+          }}
+        >
           Inspection Controls
         </h3>
 
@@ -230,7 +234,7 @@ const crackTimeline =
             justifyContent: "center",
             alignItems: "center",
             gap: "60px",
-            marginTop: "20px",
+            marginTop: "5px",
             flexWrap: "wrap"
           }}
         >
@@ -240,7 +244,7 @@ const crackTimeline =
               background: "#0F172A",
               padding: "15px",
               borderRadius: "10px",
-              minWidth: "250px",
+              minWidth: "220px",
               textAlign: "center"
             }}
           >
@@ -258,7 +262,7 @@ const crackTimeline =
               background: "#0F172A",
               padding: "15px",
               borderRadius: "10px",
-              minWidth: "250px",
+              minWidth: "220px",
               textAlign: "center"
             }}
           >
@@ -292,7 +296,7 @@ const crackTimeline =
               background: "#0F172A",
               padding: "15px",
               borderRadius: "10px",
-              minWidth: "250px",
+              minWidth: "220px",
               textAlign: "center"
             }}
           >
@@ -611,6 +615,15 @@ const crackTimeline =
 
       <button
         onClick={generateReport}
+        style={{
+          background: "#2563EB",
+          color: "white",
+          border: "none",
+          padding: "12px 20px",
+          borderRadius: "8px",
+          cursor: "pointer",
+          width: "100%"
+        }}
       >
         Generate AI Report
       </button>
