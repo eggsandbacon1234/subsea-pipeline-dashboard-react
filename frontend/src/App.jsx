@@ -151,49 +151,116 @@ const generateReport = async () => {
 
 };
 
+const crackCount =
+  detections.filter(
+    d => d.type === "crack"
+  ).length;
+
+const crackDetections =
+  detections.filter(
+    d => d.type === "crack"
+  );
+
+const highestCrackConfidence =
+  crackDetections.length > 0
+    ? Math.max(
+        ...crackDetections.map(
+          d => d.confidence
+        )
+      ).toFixed(2)
+    : 0;
+
+const averageCrackConfidence =
+  crackDetections.length > 0
+    ? (
+        crackDetections.reduce(
+          (sum, d) =>
+            sum + d.confidence,
+          0
+        ) /
+        crackDetections.length
+      ).toFixed(2)
+    : 0;
+
+const crackTimeline =
+  uniqueTimeline.filter(
+    detection =>
+      detection.type === "crack"
+  );
+
   return (
     <div
       style={{
-        padding: "20px",
+        background: "#0F172A",
+        color: "white",
+        minHeight: "100vh",
+        padding: "30px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center"
       }}
     >
-      <h1>Subsea Pipeline Inspection System</h1>
+      <h1>
+        Subsea Pipeline Inspection Dashboard
+      </h1>
 
-      <input
-        type="file"
-        accept="video/*"
-        onChange={handleVideoUpload}
-      />
+      <div
+        style={{
+          background: "#1E293B",
+          padding: "20px",
+          borderRadius: "12px",
+          width: "90%",
+          marginTop: "20px"
+        }}
+      >
 
-      <div style={{ marginTop: "20px" }}>
-        <label>
-          Confidence Threshold: {confidence}
-        </label>
-
-        <br />
+        <h3>
+          Inspection Controls
+        </h3>
 
         <input
-          type="range"
-          min="0.1"
-          max="1"
-          step="0.1"
-          value={confidence}
-          onChange={(e) =>
-            setConfidence(
-              parseFloat(e.target.value)
-            )
-          }
-          style={{ width: "300px" }}
+          type="file"
+          accept="video/*"
+          onChange={handleVideoUpload}
         />
+
+        <div
+          style={{
+            marginTop: "20px"
+          }}
+        >
+
+          <label>
+            Confidence Threshold: {confidence}
+          </label>
+
+          <br />
+
+          <input
+            type="range"
+            min="0.1"
+            max="1"
+            step="0.1"
+            value={confidence}
+            onChange={(e) =>
+              setConfidence(
+                parseFloat(e.target.value)
+              )
+            }
+            style={{
+              width: "300px"
+            }}
+          />
+
+        </div>
+
+        <p>
+          Detections Loaded:
+          {detections.length}
+        </p>
+
       </div>
 
-      <p>
-        Detections Loaded:
-        {detections.length}
-      </p>
 
       {loading && (
         <h2>
@@ -201,215 +268,286 @@ const generateReport = async () => {
         </h2>
       )}
                   
-      {videoUrl && processedVideo && (
+      <div
+        style={{
+          background: "#1E293B",
+          padding: "20px",
+          borderRadius: "12px",
+          width: "90%",
+          marginTop: "20px"
+        }}
+      >
+
+        <div
+          style={{
+            background: "#1E293B",
+            padding: "20px",
+            borderRadius: "12px",
+            width: "90%",
+            marginTop: "20px"
+          }}
+        >
+
+          <h2>
+            Video Comparison
+          </h2>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "20px"
+            }}
+          >
+
+            <div
+              style={{
+                flex: 1
+              }}
+            >
+
+              <h2>
+                Original Video
+              </h2>
+
+              {videoUrl ? (
+
+                <video
+                  ref={originalVideoRef}
+                  controls
+                  width="100%"
+                  src={videoUrl}
+                />
+
+              ) : (
+
+                <div
+                  style={{
+                    height: "300px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "2px dashed #475569",
+                    borderRadius: "12px"
+                  }}
+                >
+
+                  No Original Video Uploaded
+
+                </div>
+
+              )}
+
+            </div>
+
+            <div
+              style={{
+                flex: 1
+              }}
+            >
+
+              <h2>
+                Processed Video
+              </h2>
+
+              {processedVideo ? (
+
+                <video
+                  ref={processedVideoRef}
+                  controls
+                  width="100%"
+                  src={processedVideo}
+                />
+
+              ) : (
+
+                <div
+                  style={{
+                    height: "300px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "2px dashed #475569",
+                    borderRadius: "12px"
+                  }}
+                >
+
+                  No Processed Video Available
+
+                </div>
+
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      
 
         <div
           style={{
             display: "flex",
             gap: "20px",
-            marginTop: "20px"
-          }}
-        >
-
-          <div>
-
-            <h2>
-              Original Video
-            </h2>
-
-            <video
-              ref={originalVideoRef}
-              controls
-              width="500"
-              src={videoUrl}
-              onPlay={() => {
-                processedVideoRef.current?.play();
-              }}
-              onPause={() => {
-                processedVideoRef.current?.pause();
-              }}
-              onSeeked={(e) => {
-                if (processedVideoRef.current) {
-                  processedVideoRef.current.currentTime =
-                    e.target.currentTime;
-                }
-              }}
-            />
-
-          </div>
-
-          <div>
-
-            <h2>
-              Processed Video
-            </h2>
-
-            <video
-              ref={processedVideoRef}
-              controls
-              width="500"
-              src={processedVideo}
-            />
-
-          </div>
-
-        </div>
-
-      )}
-
-      {detections.length > 0 && (
-
-        <div
-          style={{
             marginTop: "30px"
           }}
         >
 
-          <h2>
-            Detection Summary
-          </h2>
+          <div
+            style={{
+              background: "#1E293B",
+              padding: "20px",
+              borderRadius: "12px",
+              minWidth: "180px",
+              textAlign: "center"
+            }}
+          >
+            <h3>
+              Crack Events
+            </h3>
 
-          <p>
-            Highest Confidence:
-            {
-              detections.length > 0
-                ? Math.max(
-                    ...detections.map(
-                      d => d.confidence
-                    )
-                  ).toFixed(2)
-                : 0
-            }
-          </p>
+            <h1>
+              {crackCount}
+            </h1>
+        
+          </div>
 
-          <p>
-            Average Confidence:
-            {
-              detections.length > 0
-                ? (
-                    detections.reduce(
-                      (sum, d) =>
-                        sum + d.confidence,
-                      0
-                    ) / detections.length
-                  ).toFixed(2)
-                : 0
-            }
-          </p>
+          <div
+            style={{
+              background: "#1E293B",
+              padding: "20px",
+              borderRadius: "12px",
+              minWidth: "180px",
+              textAlign: "center"
+            }}
+          >
+            <h3>
+              Peak Confidence
+            </h3>
 
-          <p>
-            Total Detections:
-            {detections.length}
-          </p>
+            <h1>
+              {highestCrackConfidence}
+            </h1>
 
-          <p>
-            Cracks:
-            {
-              detections.filter(
-                d => d.type === "crack"
-              ).length
-            }
-          </p>
+          </div>
 
-          <p>
-            Pipes:
-            {
-              detections.filter(
-                d => d.type === "pipe"
-              ).length
-            }
-          </p>
+          <div
+            style={{
+              background: "#1E293B",
+              padding: "20px",
+              borderRadius: "12px",
+              minWidth: "180px",
+              textAlign: "center"
+            }}
+          >
+            <h3>
+              Average Confidence
+            </h3>
+
+            <h1>
+              {averageCrackConfidence}
+            </h1>
+
+          </div>
 
         </div>
 
-      )}
 
       
       {detections.length > 0 && (
 
-        <div
-          style={{
-            marginTop: "30px",
-            width: "80%"
-          }}
-        >
+  <div
+    style={{
+      display: "flex",
+      gap: "20px",
+      width: "90%",
+      marginTop: "30px",
+      alignItems: "flex-start"
+    }}
+  >
 
-          <h2>
-            Detection Timeline
-          </h2>
+    {/* Timeline */}
 
-          {uniqueTimeline.map(
-            (detection, index) => (
+    <div
+      style={{
+        flex: 1
+      }}
+    >
 
-              <div
-                key={index}
+      <h2>
+        Crack Timeline
+      </h2>
 
-                style={{
-                  cursor: "pointer",
-                  padding: "10px",
-                  marginBottom: "8px",
-                  border: "1px solid white",
-                  borderRadius: "8px"
-                }}
+      {crackTimeline.map(
+        (detection, index) => (
 
-                onClick={() => {
+          <div
+            key={index}
+            style={{
+              cursor: "pointer",
+              padding: "10px",
+              marginBottom: "8px",
+              border: "1px solid white",
+              borderRadius: "8px"
+            }}
 
-                  if (
-                    originalVideoRef.current
-                  ) {
-                    originalVideoRef.current.currentTime =
-                      detection.time;
-                  }
+            onClick={() => {
 
-                  if (
-                    processedVideoRef.current
-                  ) {
-                    processedVideoRef.current.currentTime =
-                      detection.time;
-                  }
+              if (
+                originalVideoRef.current
+              ) {
+                originalVideoRef.current.currentTime =
+                  detection.time;
+              }
 
-                }}
-              >
+              if (
+                processedVideoRef.current
+              ) {
+                processedVideoRef.current.currentTime =
+                  detection.time;
+              }
 
-                {detection.time}s
+            }}
 
-                {" - "}
-
-                {detection.type}
-
-                {" ("}
-
-                {detection.confidence.toFixed(2)}
-
-                {")"}
-
-              </div>
-
-            )
-          )}
-
-        </div>
-
-      )}
-      {detections.length > 0 && (
-
-        <div
-          style={{
-            marginTop: "40px"
-          }}
-        >
-
-          <button
-            onClick={generateReport}
           >
-            Generate AI Report
-          </button>
 
-        </div>
+            {detection.time}s
 
+            {" - "}
+
+            {detection.type}
+
+            {" ("}
+
+            {detection.confidence.toFixed(2)}
+
+            {")"}
+
+          </div>
+
+        )
       )}
 
-            {reportLoading && (
+    </div>
+
+    {/* Report */}
+
+    <div
+      style={{
+        flex: 1
+      }}
+    >
+
+      <button
+        onClick={generateReport}
+      >
+        Generate AI Report
+      </button>
+
+      {reportLoading && (
 
         <p>
           Generating Report...
@@ -422,7 +560,6 @@ const generateReport = async () => {
         <div
           style={{
             marginTop: "20px",
-            maxWidth: "900px",
             textAlign: "left",
             whiteSpace: "pre-wrap",
             border: "1px solid white",
@@ -440,6 +577,12 @@ const generateReport = async () => {
         </div>
 
       )}
+
+    </div>
+
+  </div>
+
+)}
       
 
       
