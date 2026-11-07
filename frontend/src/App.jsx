@@ -200,8 +200,14 @@ const crackTimeline =
         alignItems: "center"
       }}
     >
-      <h1>
+      <h1
+        style={{
+          fontSize: "3rem",
+          marginBottom: "10px"
+        }}
+      >
         Subsea Pipeline Inspection Dashboard
+        
       </h1>
 
       <div
@@ -218,46 +224,89 @@ const crackTimeline =
           Inspection Controls
         </h3>
 
-        <input
-          type="file"
-          accept="video/*"
-          onChange={handleVideoUpload}
-        />
-
         <div
           style={{
-            marginTop: "20px"
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "60px",
+            marginTop: "20px",
+            flexWrap: "wrap"
           }}
         >
 
-          <label>
-            Confidence Threshold: {confidence}
-          </label>
-
-          <br />
-
-          <input
-            type="range"
-            min="0.1"
-            max="1"
-            step="0.1"
-            value={confidence}
-            onChange={(e) =>
-              setConfidence(
-                parseFloat(e.target.value)
-              )
-            }
+          <div
             style={{
-              width: "300px"
+              background: "#0F172A",
+              padding: "15px",
+              borderRadius: "10px",
+              minWidth: "250px",
+              textAlign: "center"
             }}
-          />
+          >
+
+            <input
+              type="file"
+              accept="video/*"
+              onChange={handleVideoUpload}
+            />
+
+          </div>
+
+          <div
+            style={{
+              background: "#0F172A",
+              padding: "15px",
+              borderRadius: "10px",
+              minWidth: "250px",
+              textAlign: "center"
+            }}
+          >
+
+            <label>
+              Confidence: {confidence}
+            </label>
+
+            <br />
+
+            <input
+              type="range"
+              min="0.1"
+              max="1"
+              step="0.1"
+              value={confidence}
+              onChange={(e) =>
+                setConfidence(
+                  parseFloat(e.target.value)
+                )
+              }
+              style={{
+                width: "250px"
+              }}
+            />
+
+          </div>
+
+          <div
+            style={{
+              background: "#0F172A",
+              padding: "15px",
+              borderRadius: "10px",
+              minWidth: "250px",
+              textAlign: "center"
+            }}
+          >
+
+            <strong>
+              Detections:
+            </strong>
+
+            {" "}
+            {crackCount}
+
+          </div>
 
         </div>
-
-        <p>
-          Detections Loaded:
-          {detections.length}
-        </p>
 
       </div>
 
@@ -277,16 +326,6 @@ const crackTimeline =
           marginTop: "20px"
         }}
       >
-
-        <div
-          style={{
-            background: "#1E293B",
-            padding: "20px",
-            borderRadius: "12px",
-            width: "90%",
-            marginTop: "20px"
-          }}
-        >
 
           <h2>
             Video Comparison
@@ -400,7 +439,6 @@ const crackTimeline =
 
           </div>
 
-        </div>
 
       </div>
 
@@ -492,7 +530,12 @@ const crackTimeline =
 
     <div
       style={{
-        flex: 1
+        flex: 1,
+        background: "#1E293B",
+        padding: "20px",
+        borderRadius: "12px",
+        height: "600px",
+        overflowY: "auto"
       }}
     >
 
@@ -509,7 +552,8 @@ const crackTimeline =
               cursor: "pointer",
               padding: "10px",
               marginBottom: "8px",
-              border: "1px solid white",
+              background: "#0F172A",
+              border: "1px solid #334155",
               borderRadius: "8px"
             }}
 
@@ -556,7 +600,12 @@ const crackTimeline =
 
     <div
       style={{
-        flex: 1
+        flex: 1,
+        background: "#1E293B",
+        padding: "20px",
+        borderRadius: "12px",
+        height: "600px",
+        overflowY: "auto"
       }}
     >
 
