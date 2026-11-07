@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 function App() {
+  const originalVideoRef = useRef(null);
+  const processedVideoRef = useRef(null);
+  const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState(null);
   const [confidence, setConfidence] = useState(0.5);
   const [currentTime, setCurrentTime] = useState(0);
@@ -8,7 +11,7 @@ function App() {
   const [processedVideo,
        setProcessedVideo]
        = useState(null);
- 
+  
        
   const handleVideoUpload = async (event) => {
 
@@ -27,6 +30,12 @@ function App() {
       file
     );
 
+    formData.append(
+      "confidence",
+      confidence
+    );
+
+    setLoading(true);
     const response = await fetch(
       "http://127.0.0.1:8000/analyze",
       {
@@ -36,6 +45,7 @@ function App() {
     );
 
     const data = await response.json();
+    setLoading(false);
 
     setDetections(
       data.detections
@@ -46,6 +56,28 @@ function App() {
     );
   };
 
+  const uniqueTimeline = [];
+
+detections.forEach(
+  detection => {
+
+    const alreadyExists =
+      uniqueTimeline.some(
+        item =>
+          item.type === detection.type &&
+          Math.abs(
+            item.time -
+            detection.time
+          ) < 2
+      );
+
+    if (!alreadyExists) {
+      uniqueTimeline.push(
+        detection
+      );
+    }
+  }
+);
 
   return (
     <div
@@ -90,8 +122,13 @@ function App() {
         Detections Loaded:
         {detections.length}
       </p>
-            
 
+      {loading && (
+        <h2>
+          Processing Video...
+        </h2>
+      )}
+                  
       {videoUrl && processedVideo && (
 
         <div
@@ -109,9 +146,22 @@ function App() {
             </h2>
 
             <video
+              ref={originalVideoRef}
               controls
               width="500"
               src={videoUrl}
+              onPlay={() => {
+                processedVideoRef.current?.play();
+              }}
+              onPause={() => {
+                processedVideoRef.current?.pause();
+              }}
+              onSeeked={(e) => {
+                if (processedVideoRef.current) {
+                  processedVideoRef.current.currentTime =
+                    e.target.currentTime;
+                }
+              }}
             />
 
           </div>
@@ -123,6 +173,7 @@ function App() {
             </h2>
 
             <video
+              ref={processedVideoRef}
               controls
               width="500"
               src={processedVideo}
@@ -145,6 +196,34 @@ function App() {
           <h2>
             Detection Summary
           </h2>
+
+          <p>
+            Highest Confidence:
+            {
+              detections.length > 0
+                ? Math.max(
+                    ...detections.map(
+                      d => d.confidence
+                    )
+                  ).toFixed(2)
+                : 0
+            }
+          </p>
+
+          <p>
+            Average Confidence:
+            {
+              detections.length > 0
+                ? (
+                    detections.reduce(
+                      (sum, d) =>
+                        sum + d.confidence,
+                      0
+                    ) / detections.length
+                  ).toFixed(2)
+                : 0
+            }
+          </p>
 
           <p>
             Total Detections:
@@ -186,11 +265,37 @@ function App() {
             Detection Timeline
           </h2>
 
-          {detections.map(
+          {uniqueTimeline.map(
             (detection, index) => (
 
               <div
                 key={index}
+
+                style={{
+                  cursor: "pointer",
+                  padding: "10px",
+                  marginBottom: "8px",
+                  border: "1px solid white",
+                  borderRadius: "8px"
+                }}
+
+                onClick={() => {
+
+                  if (
+                    originalVideoRef.current
+                  ) {
+                    originalVideoRef.current.currentTime =
+                      detection.time;
+                  }
+
+                  if (
+                    processedVideoRef.current
+                  ) {
+                    processedVideoRef.current.currentTime =
+                      detection.time;
+                  }
+
+                }}
               >
 
                 {detection.time}s
