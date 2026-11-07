@@ -316,6 +316,25 @@ const crackTimeline =
                   controls
                   width="100%"
                   src={videoUrl}
+
+                  onPlay={() => {
+                    processedVideoRef.current?.play();
+                  }}
+
+                  onPause={() => {
+                    processedVideoRef.current?.pause();
+                  }}
+
+                  onSeeked={(e) => {
+
+                    if (
+                      processedVideoRef.current
+                    ) {
+                      processedVideoRef.current.currentTime =
+                        e.target.currentTime;
+                    }
+
+                  }}
                 />
 
               ) : (
