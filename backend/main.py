@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from moviepy import VideoFileClip
 from ultralytics import YOLO
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import UploadFile, File
+from fastapi import UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 import os
 import cv2
@@ -35,7 +35,10 @@ def root():
     }
 
 @app.post("/analyze")
-async def analyze_video(file: UploadFile = File(...)):
+async def analyze_video(
+    file: UploadFile = File(...),
+    confidence: float = Form(...)
+):
 
     video_path = os.path.join(
         "uploads",
@@ -50,14 +53,18 @@ async def analyze_video(file: UploadFile = File(...)):
     fps = cap.get(cv2.CAP_PROP_FPS)
 
     cap.release()
+    print(
+        f"Running analysis with confidence={confidence}"
+    )
 
     results = model.predict(
         source=video_path,
-        conf=0.5,
+        conf=confidence,
         save=True,
         vid_stride=3,
         project=os.path.abspath("outputs"),
-        name="processed"
+        name="processed",
+        exist_ok=True
     )
 
     processed_video = str(results[0].save_dir)
