@@ -28,7 +28,7 @@ app.add_middleware(
 
 model = YOLO("model/best.pt")
 genai.configure(
-    api_key="AQ.Ab8RN6K8FIAiiEQZHq8OjQ4EC4oyEO1Z7OnM9NITlmyXgznbAw"
+    api_key="SECRET_API_KEY"
 )
 
 
